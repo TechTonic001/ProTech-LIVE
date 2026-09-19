@@ -1,0 +1,346 @@
+// src/utils/api.js
+import axios from 'axios';
+import toast from 'react-hot-toast';
+
+const getBaseURL = () => {
+  const configured = (import.meta.env.VITE_API_URL || '').trim().replace(/\/+$/, '');
+  if (!configured) return '/api';
+  if (configured.endsWith('/api')) return configured;
+  return `${configured}/api`;
+};
+
+const BASE_URL = getBaseURL();
+
+const api = axios.create({
+  baseURL: BASE_URL,
+  timeout: 25000,
+  headers: { 'Content-Type': 'application/json' },
+  withCredentials: true,
+});
+
+// ── Request interceptor ───────────────────────────────────────────────────────
+// Attaches the short-lived access token to every outbound request.
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('protech_token');
+    if (token && config.headers) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// ── Silent refresh state ──────────────────────────────────────────────────────
+// isRefreshing — prevents multiple simultaneous refresh calls (one token refresh at a time).
+// failedRequestsQueue — holds resolve/reject callbacks for requests that hit 401
+//   while a refresh is already in flight; they are replayed once the new token arrives.
+let isRefreshing = false;
+let failedRequestsQueue = [];
+
+/**
+ * Flush the queue of paused requests.
+ * @param {Error|null} error  - If set, reject all queued promises.
+ * @param {string|null} token - If set, resolve all queued promises with the new token.
+ */
+const flushQueue = (error, token = null) => {
+  failedRequestsQueue.forEach(({ resolve, reject }) => {
+    if (error) {
+      reject(error);
+    } else {
+      resolve(token);
+    }
+  });
+  failedRequestsQueue = [];
+};
+
+/**
+ * Determine the correct login path for the current page so we can redirect
+ * to the matching portal after a hard session expiry.
+ */
+const getLoginPath = () => {
+  const path = window.location.pathname;
+  if (path.startsWith('/admin')) return '/admin/login';
+  if (path.startsWith('/tenant')) return '/tenant/login';
+  return '/landlord/login';
+};
+
+/**
+ * Hard logout — clear all local auth state and redirect to login.
+ * Called only when the refresh token itself is expired/invalid.
+ */
+const forceLogout = () => {
+  localStorage.removeItem('protech_token');
+  localStorage.removeItem('protech_user');
+  const publicPaths = [
+    '/landlord/login', '/landlord/register',
+    '/tenant/login', '/tenant/register',
+    '/admin/login',
+    '/forgot-password', '/verify-otp', '/reset-success', '/',
+  ];
+  if (!publicPaths.includes(window.location.pathname)) {
+    window.location.href = getLoginPath();
+  }
+};
+
+// ── Response interceptor ──────────────────────────────────────────────────────
+api.interceptors.response.use(
+  // 2xx — pass through unchanged
+  (response) => response,
+
+  async (error) => {
+    const originalRequest = error.config;
+    const status = error.response?.status;
+    const message = error.response?.data?.error
+      || error.response?.data?.message
+      || error.message
+      || 'An unexpected error occurred';
+
+    // ── Network / timeout errors (no HTTP response) ───────────────────────────
+    if (!error.response) {
+      const isTimeout = error.code === 'ECONNABORTED' ||
+        error.message?.includes('timeout');
+      toast.error(
+        isTimeout
+          ? 'Request timed out. Check your connection.'
+          : 'Network error. Check your internet connection.',
+        { duration: 5000 }
+      );
+      return Promise.reject(new Error(message));
+    }
+
+    if (status === 403) {
+      toast.error('You do not have permission to do this.');
+      return Promise.reject(new Error(message));
+    }
+
+    if (status === 404) {
+      return Promise.reject(new Error(message));
+    }
+
+    if (status === 429) {
+      toast.error('Too many requests. Please wait a moment.');
+      return Promise.reject(new Error(message));
+    }
+
+    if (status >= 500) {
+      toast.error('Server error. Please try again in a moment.', { duration: 5000 });
+      return Promise.reject(new Error(message));
+    }
+
+    // ── 401 — attempt silent token refresh ──────────────────────────────────
+    if (status !== 401) {
+      return Promise.reject(new Error(message));
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 401 Handling — attempt a silent token refresh UNLESS:
+    //   a) this request is already a retry (_retry flag prevents infinite loops)
+    //   b) this is the /auth/refresh call itself (refresh token is also expired)
+    //   c) this is a login/register call (wrong credentials, not an expiry)
+    // ─────────────────────────────────────────────────────────────────────────
+    const isRefreshEndpoint = originalRequest.url?.includes('/auth/refresh');
+    const isAuthEndpoint = originalRequest.url?.includes('/auth/login') ||
+      originalRequest.url?.includes('/auth/register');
+
+    // Login/register 401s mean wrong credentials — pass the real error
+    // straight back to the component; don't treat this as a session expiry.
+    if (isAuthEndpoint) {
+      return Promise.reject(new Error(message));
+    }
+
+    if (originalRequest._retry || isRefreshEndpoint) {
+      localStorage.removeItem('protech_token');
+      localStorage.removeItem('protech_user');
+      toast.error('Session expired. Please log in again.');
+      forceLogout();
+      return Promise.reject(new Error('Session expired. Please log in again.'));
+    }
+
+    // Mark request as a retry so if it 401s again we don't loop
+    originalRequest._retry = true;
+
+    if (isRefreshing) {
+      // A refresh is already in flight — queue this request and wait for
+      // the new token to arrive via the promise below.
+      return new Promise((resolve, reject) => {
+        failedRequestsQueue.push({ resolve, reject });
+      })
+        .then((newToken) => {
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          return api(originalRequest);
+        })
+        .catch((err) => Promise.reject(err));
+    }
+
+    // ── Kick off the one token refresh ───────────────────────────────────────
+    isRefreshing = true;
+
+    try {
+      // POST /api/auth/refresh — the HttpOnly cookie is sent automatically
+      // because withCredentials: true is set on the axios instance.
+      const { data } = await api.post('/auth/refresh');
+      const newAccessToken = data.accessToken;
+
+      // Persist the new short-lived token
+      localStorage.setItem('protech_token', newAccessToken);
+
+      // Flush the queue — all waiting requests get the new token
+      flushQueue(null, newAccessToken);
+
+      // Retry the original failed request with the new token
+      originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+      return api(originalRequest);
+    } catch (refreshError) {
+      // Refresh failed — session is truly dead
+      flushQueue(refreshError, null);
+      forceLogout();
+      return Promise.reject(new Error('Session expired. Please log in again.'));
+    } finally {
+      isRefreshing = false;
+    }
+  }
+);
+
+// ── Named API Functions ───────────────────────────────────────────────────────
+export const authAPI = {
+  register: (data) => api.post('/auth/register', data),
+  login: (data) => api.post('/auth/login', data),
+  refresh: () => api.post('/auth/refresh'),
+  logout: () => api.post('/auth/logout'),
+  getProfile: () => api.get('/auth/profile'),
+  updateProfile: (data) => api.put('/auth/profile', data),
+  deleteAccount: (data) => api.delete('/auth/account', { data }),
+  forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
+  resetPassword: (data) => api.post('/auth/reset-password', data),
+  relinkLandlord: (landlord_code) => api.post('/auth/relink-landlord', { landlord_code }),
+};
+
+export const propertyAPI = {
+  getAll: (params) => api.get('/property', { params }),
+  create: (data) => api.post('/property', data),
+  update: (id, data) => {
+    if (!id) return Promise.reject(new Error('Property ID is required.'));
+    return api.put(`/property/${id}`, data);
+  },
+  // Soft delete — sends to recycle bin for 30 days
+  delete: (id) => {
+    if (!id) return Promise.reject(new Error('Property ID is required.'));
+    return api.delete(`/property/${id}`);
+  },
+  getDeleted: () => api.get('/property/deleted'),
+  restore: (id) => {
+    if (!id) return Promise.reject(new Error('Property ID is required.'));
+    return api.post(`/property/${id}/restore`);
+  },
+};
+
+export const roomAPI = {
+  getAll: (propertyId) => api.get(`/room/property/${propertyId}`),
+  getAllWithLeases: () => api.get('/rooms/all-with-leases'),
+  create: (data) => api.post('/room', data),
+  update: (id, data) => {
+    if (!id) return Promise.reject(new Error('Room ID is required.'));
+    return api.put(`/room/${id}`, data);
+  },
+  delete: (id) => {
+    if (!id) return Promise.reject(new Error('Room ID is required.'));
+    return api.delete(`/room/${id}`);
+  },
+};
+
+export const dashboardAPI = {
+  getLandlord: () => api.get('/dashboard/landlord'),
+};
+
+export const leaseAPI = {
+  getAll: (params) => api.get('/lease/landlord/active', { params }),
+  getMine: (params) => api.get('/lease/tenant/active', { params }),
+  getMyLease: () => api.get('/lease/my-lease'),
+  create: (data) => api.post('/lease', data),
+  getById: (id) => {
+    if (!id) return Promise.reject(new Error('Lease ID is required.'));
+    return api.get(`/lease/${id}`);
+  },
+  update: (id, data) => {
+    if (!id) return Promise.reject(new Error('Lease ID is required.'));
+    return api.put(`/lease/${id}`, data);
+  },
+  terminate: (id) => {
+    if (!id) return Promise.reject(new Error('Lease ID is required.'));
+    return api.patch(`/lease/${id}/terminate`);
+  },
+  getOverdue: () => api.get('/lease/overdue'),
+};
+
+export const paymentAPI = {
+  initiate: (data) => api.post('/payments/initiate', data),
+  getMetadata: () => api.get('/payments/metadata'),
+  getCheckout: (leaseId) => api.get(`/payments/checkout/${leaseId}`),
+  getHistory: (params) => api.get('/payments/history', { params }),
+  getReceipt: (ref) => api.get(`/payments/receipt/${ref}`),
+  createSubaccount: (data) => api.post('/payments/subaccount', data),
+  getBankDetails: () => api.get('/payments/bank-details'),
+  getBanks: () => api.get('/payments/banks'),
+  resolveAccount: (params) => api.get('/payments/resolve', { params }),
+};
+
+export const approvalAPI = {
+  request: (data) => api.post('/approval/request', data),
+  getPending: (params) => api.get('/approval/pending', { params }),
+  getApproved: (params) => api.get('/approval/approved', { params }),
+  process: (id, data) => {
+    if (!id) return Promise.reject(new Error('Approval ID is required.'));
+    return api.put(`/approval/${id}`, data);
+  },
+};
+
+export const announcementAPI = {
+  getAll: (params) => api.get('/announcement', { params }),
+  create: (data) => api.post('/announcement', data),
+  delete: (id) => {
+    if (!id) return Promise.reject(new Error('Announcement ID is required.'));
+    return api.delete(`/announcement/${id}`);
+  },
+};
+
+export const adminAPI = {
+  getStats: () => api.get('/admin/stats'),
+  getLandlords: (params) => api.get('/admin/landlords', { params }),
+  getTenants: (params) => api.get('/admin/tenants', { params }),
+  getPayments: (params) => api.get('/admin/payments', { params }),
+  getProperties: (params) => api.get('/admin/properties', { params }),
+};
+
+export const notificationAPI = {
+  getMy: () => api.get('/notification/my'),
+  getSettings: () => api.get('/notification/settings'),
+  updateSettings: (data) => api.put('/notification/settings', data),
+};
+
+export const recycleBinAPI = {
+  getProperties: () => api.get('/recycle-bin/properties'),
+  getTenants: () => api.get('/recycle-bin/tenants'),
+  recoverProperty: (id) => api.put(`/recycle-bin/properties/${id}/recover`),
+  recoverTenant: (id) => api.put(`/recycle-bin/tenants/${id}/recover`),
+};
+
+export const tenantAPI = {
+  // Landlord-side soft-delete operations
+  getDeleted: () => api.get('/tenants/deleted'),
+  softDelete: (id, reason) => {
+    if (!id) return Promise.reject(new Error('Tenant ID is required.'));
+    return api.delete(`/tenants/${id}`, { data: { reason } });
+  },
+  restore: (id) => {
+    if (!id) return Promise.reject(new Error('Tenant ID is required.'));
+    return api.post(`/tenants/${id}/restore`);
+  },
+  // Unassign tenant from their room (landlord removes tenant but keeps history)
+  unassign: (id) => {
+    if (!id) return Promise.reject(new Error('Tenant ID is required.'));
+    return api.patch(`/tenants/${id}/unassign`);
+  },
+};
+
+export default api;

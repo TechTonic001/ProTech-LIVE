@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "buildCommand": "cd Cilent && npm install && npm run build",
+  "outputDirectory": "Cilent/dist",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
