@@ -52,17 +52,17 @@ const AdminProperties = () => {
       <div className="flex justify-between items-end">
         <div>
           <h1 className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">Platform Properties</h1>
-          <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mt-1">Audit log of physical hostels and rental complexes managed by ProTech</p>
+          <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mt-1">Audit log of physical properties and rental complexes managed by ProTech</p>
         </div>
         <div className="bg-slate-100 border border-slate-200 rounded-xl px-3.5 py-1.5 hidden sm:block">
-          <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">{properties.length} Hostels</span>
+          <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">{properties.length} Properties</span>
         </div>
       </div>
 
       {properties.length === 0 ? (
         <EmptyState
           title="No Properties Registered"
-          description="There are currently no hostel properties listed on the platform."
+          description="There are currently no rental properties listed on the platform."
           icon={Building2}
           actionLabel="Go to Dashboard"
           onAction={() => navigate('/admin/dashboard')}
@@ -73,9 +73,9 @@ const AdminProperties = () => {
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="bg-slate-50 text-slate-400 font-bold uppercase tracking-wider border-b border-slate-100">
-                  <th className="p-4">Hostel Property</th>
+                  <th className="p-4">Property Name</th>
                   <th className="p-4">Owner Landlord</th>
-                  <th className="p-4">Hostel Address</th>
+                  <th className="p-4">Property Address</th>
                   <th className="p-4">Creation Date</th>
                 </tr>
               </thead>

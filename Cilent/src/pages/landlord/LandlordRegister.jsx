@@ -126,7 +126,7 @@ const LandlordRegister = () => {
         accentColor="blue"
         roleLabel="LANDLORD PORTAL"
         roleIcon={<Building2 className="w-5 h-5" />}
-        tagline="Manage your hostel with ease"
+        tagline="Manage your property with ease"
       >
         <div className="font-outfit space-y-6 text-center">
           <div className="flex justify-center">
@@ -145,7 +145,7 @@ const LandlordRegister = () => {
               {landlordCode}
             </p>
             <p className="text-xs text-amber-600">
-              Save this — your tenants need it to register
+              Your unique ProTech code. Share it with your tenants so they can register and link their account to your property — whether it is a hostel, apartment, house, or any rental unit.
             </p>
             <button
               onClick={() => {
@@ -172,7 +172,7 @@ const LandlordRegister = () => {
       accentColor="blue"
       roleLabel="LANDLORD PORTAL"
       roleIcon={<Building2 className="w-5 h-5" />}
-      tagline="Manage your hostel with ease"
+      tagline="Manage your property with ease"
     >
       <div className="font-outfit space-y-6">
         <div>

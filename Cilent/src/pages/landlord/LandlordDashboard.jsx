@@ -353,7 +353,7 @@ const LandlordDashboard = () => {
           {[
           {
             title: "Add Property",
-            sub: "Register a new hostel",
+            sub: "Register a new property",
             icon: Building2,
             color: "text-emerald-600",
             bg: "bg-emerald-50",
@@ -661,41 +661,126 @@ const LandlordDashboard = () => {
         )}
       </div>
 
-      {/* Charts Row */}
+      {/* Quick Actions */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[
+          {
+            title: "Add Property",
+            sub: "Register a new property",
+            icon: Building2,
+            color: "text-emerald-600",
+            bg: "bg-emerald-50",
+            path: "/landlord/properties",
+            tourTarget: "add-property-btn",
+          },
+          {
+            title: "Manage Rooms",
+            sub: "View room status",
+            icon: DoorOpen,
+            color: "text-blue-600",
+            bg: "bg-blue-50",
+            path: "/landlord/rooms",
+          },
+          {
+            title: "Rent Payments",
+            sub: "Track & confirm rent",
+            icon: CreditCard,
+            color: "text-amber-600",
+            bg: "bg-amber-50",
+            path: "/landlord/payments",
+          },
+          {
+            title: "Announcements",
+            sub: "Broadcast to tenants",
+            icon: Megaphone,
+            color: "text-violet-600",
+            bg: "bg-violet-50",
+            path: "/landlord/announcements",
+          },
+        ].map((item, idx) => {
+          const Icon = item.icon;
+          return (
+            <button
+              key={idx}
+              data-tour={item.tourTarget}
+              onClick={() => navigate(item.path)}
+              className="p-4 bg-white border border-slate-100 rounded-2xl shadow-xs hover:border-slate-300 hover:shadow-sm transition text-left flex flex-col justify-between h-28 group"
+            >
+              <div
+                className={`w-10 h-10 rounded-xl ${item.bg} ${item.color} flex items-center justify-center group-hover:scale-105 transition-transform`}
+              >
+                <Icon className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-slate-900 group-hover:text-blue-600 transition">
+                  {item.title}
+                </p>
+                <p className="text-[11px] text-slate-400 font-medium">
+                  {item.sub}
+                </p>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Analytics & Stats Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Monthly Revenue BarChart */}
+        {/* Monthly Revenue Area Chart */}
         <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-xs lg:col-span-2">
-          <div className="mb-4">
-            <h3 className="text-sm font-bold text-slate-900">
-              Monthly Revenue
-            </h3>
-            <p className="text-xs text-slate-500">
-              Rent collections aggregated over the last 6 months
-            </p>
+          <div className="flex justify-between items-center mb-4">
+            <div>
+              <h3 className="text-sm font-bold text-slate-900">
+                Rent Collection Overview
+              </h3>
+              <p className="text-xs text-slate-500">
+                Monthly revenue performance over the last 6 months
+              </p>
+            </div>
+            <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg">
+              Live Data
+            </span>
           </div>
           <div className="h-[220px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              <AreaChart data={chartData}>
+                <defs>
+                  <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#2563eb" stopOpacity={0.2} />
+                    <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
                 <XAxis
                   dataKey="month"
-                  tick={{ fontSize: 10, fill: "#64748b" }}
+                  stroke="#94a3b8"
+                  fontSize={11}
+                  tickLine={false}
+                  axisLine={false}
                 />
                 <YAxis
-                  tick={{ fontSize: 10, fill: "#64748b" }}
-                  tickFormatter={(tick) => `₦${tick.toLocaleString("en-US")}`}
+                  stroke="#94a3b8"
+                  fontSize={11}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(val) => `₦${(val / 1000).toFixed(0)}k`}
                 />
                 <Tooltip
-                  formatter={(value) => [formatCurrency(value), "Revenue"]}
+                  formatter={(val) => [`₦${val.toLocaleString()}`, "Revenue"]}
                   contentStyle={{
-                    backgroundColor: "#ffffff",
                     borderRadius: "12px",
-                    borderColor: "#e2e8f0",
-                    boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)",
+                    border: "none",
+                    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
                   }}
                 />
-                <Bar dataKey="Revenue" fill="#1565C0" radius={[4, 4, 0, 0]} />
-              </BarChart>
+                <Area
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke="#2563eb"
+                  strokeWidth={2.5}
+                  fillOpacity={1}
+                  fill="url(#colorRev)"
+                />
+              </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
@@ -705,7 +790,7 @@ const LandlordDashboard = () => {
           <div>
             <h3 className="text-sm font-bold text-slate-900">Occupancy Rate</h3>
             <p className="text-xs text-slate-500">
-              Hostel room occupancy split
+              Property room occupancy split
             </p>
           </div>
           <div className="relative h-[160px] flex items-center justify-center">
@@ -780,7 +865,7 @@ const LandlordDashboard = () => {
               <thead>
                 <tr className="border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider">
                   <th className="pb-3">Tenant</th>
-                  <th className="pb-3">Hostel/Room</th>
+                  <th className="pb-3">Property/Room</th>
                   <th className="pb-3">Amount</th>
                   <th className="pb-3">Status</th>
                   <th className="pb-3">Date</th>

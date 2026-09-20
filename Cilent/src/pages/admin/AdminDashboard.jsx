@@ -233,7 +233,7 @@ const AdminDashboard = () => {
                   <thead>
                     <tr className="text-slate-400 font-bold uppercase tracking-wider border-b border-slate-50">
                       <th className="py-2.5">Tenant</th>
-                      <th className="py-2.5">Hostel Name</th>
+                      <th className="py-2.5">Property Name</th>
                       <th className="py-2.5 text-right">Amount</th>
                     </tr>
                   </thead>
@@ -265,7 +265,7 @@ const AdminDashboard = () => {
             <div className="flex justify-between items-center mb-6">
               <div>
                 <h2 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">Recently Registered Properties</h2>
-                <p className="text-[10px] text-slate-400 font-bold uppercase mt-0.5">Latest real-estate hostel additions</p>
+                <p className="text-[10px] text-slate-400 font-bold uppercase mt-0.5">Latest real-estate property additions</p>
               </div>
               <button 
                 onClick={() => navigate('/admin/properties')}

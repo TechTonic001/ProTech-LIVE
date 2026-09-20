@@ -44,7 +44,7 @@ const TenantAnnouncements = () => {
       {/* Title */}
       <div className="flex justify-between items-end">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">Hostel Announcements</h1>
+          <h1 className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">Property Announcements</h1>
           <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mt-1">Official broadcasts and updates from your landlord</p>
         </div>
         <div className="bg-indigo-50 border border-indigo-100 rounded-xl px-3.5 py-1.5 hidden sm:block">

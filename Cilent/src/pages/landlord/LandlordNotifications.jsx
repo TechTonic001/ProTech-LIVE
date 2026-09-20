@@ -122,7 +122,7 @@ const LandlordNotifications = () => {
                         {n.tenant_name || 'System Notification'}
                       </span>
                       <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider sm:ml-2">
-                        Room {n.room_number || 'N/A'} • {n.property_name || 'Hostel'}
+                        Room {n.room_number || 'N/A'} • {n.property_name || 'Property'}
                       </span>
                     </div>
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">

@@ -22,7 +22,7 @@ export const LANDLORD_TOUR_STEPS = [
       'This is your landlord code (e.g. PT-A1B2C3). ' +
       'Share this code with your tenants  they will ' +
       'need it to register on ProTech and link their ' +
-      'account to your hostel. Keep it somewhere safe.',
+      'account to your property. Keep it somewhere safe.',
     placement: 'bottom',
     disableBeacon: true,
   },
@@ -46,7 +46,7 @@ export const LANDLORD_TOUR_STEPS = [
     target: '[data-tour="add-property-btn"]',
     title: 'Step 1: Add Your Property',
     content:
-      'Click "Add Property" to register your hostel. ' +
+      'Click "Add Property" to register your property. ' +
       'Enter the property name, address, city, and the ' +
       'number of rooms available. ProTech will ' +
       'automatically create all the rooms for you — ' +
@@ -121,7 +121,7 @@ export const LANDLORD_TOUR_STEPS = [
     title: 'Broadcast Announcements',
     content:
       'Use Announcements to send a message to ALL your ' +
-      'tenants at once — maintenance notices, hostel ' +
+      'tenants at once — maintenance notices, property ' +
       'rules, payment reminders, any message you choose. ' +
       'Every active tenant receives the announcement by ' +
       'email and as an in-app notification instantly.',
@@ -134,7 +134,7 @@ export const LANDLORD_TOUR_STEPS = [
     target: '[data-tour="nav-profile"]',
     title: 'Complete Your Profile',
     content:
-      'Add your hostel name, phone number, and address ' +
+      'Add your property name, phone number, and address ' +
       'in your Profile page. These details appear on ' +
       'every digital rent receipt that tenants receive. ' +
       'You can also restart this tour anytime from your ' +

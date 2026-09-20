@@ -76,7 +76,7 @@ const AdminLandlords = () => {
                 <tr className="bg-slate-50 text-slate-400 font-bold uppercase tracking-wider border-b border-slate-100">
                   <th className="p-4">Landlord Profile</th>
                   <th className="p-4">Contact Info</th>
-                  <th className="p-4">Linked Hostel</th>
+                  <th className="p-4">Linked Property</th>
                   <th className="p-4">Registration Date</th>
                 </tr>
               </thead>
@@ -108,7 +108,7 @@ const AdminLandlords = () => {
                       </div>
                     </td>
 
-                    {/* Hostel Details */}
+                    {/* Property Details */}
                     <td className="p-4 space-y-0.5">
                       {landlord.hostel_name ? (
                         <>
@@ -122,7 +122,7 @@ const AdminLandlords = () => {
                           </div>
                         </>
                       ) : (
-                        <span className="text-slate-400 italic">No hostel profile linked</span>
+                        <span className="text-slate-400 italic">No property profile linked</span>
                       )}
                     </td>
 

@@ -79,7 +79,7 @@ const LandlordLogin = () => {
       accentColor="blue"
       roleLabel="LANDLORD PORTAL"
       roleIcon={<Building2 className="w-5 h-5" />}
-      tagline="Manage your hostel with ease"
+      tagline="Manage your property with ease"
     >
       <div className="font-outfit space-y-6">
         <div>

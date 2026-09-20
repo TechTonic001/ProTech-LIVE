@@ -216,7 +216,7 @@ if (!allowsPartialPayment && selectedAmount < fullAmount - 0.01) {
 
           <div className="space-y-4">
             <div className="flex justify-between items-center text-sm">
-              <span className="text-slate-400 font-bold uppercase tracking-wider">Hostel Rent</span>
+              <span className="text-slate-400 font-bold uppercase tracking-wider">Property Rent</span>
               <span className="font-extrabold text-slate-800">{formatCurrency(rentAmount)}</span>
             </div>
             <div className="flex items-center justify-between gap-3 text-sm">
@@ -324,13 +324,13 @@ if (!allowsPartialPayment && selectedAmount < fullAmount - 0.01) {
             <h3 className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Lease Context</h3>
 
             <div className="space-y-4">
-              {/* Hostel */}
+              {/* Property */}
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
                   <Building className="w-4 h-4 text-blue-400" />
                 </div>
                 <div>
-                  <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Hostel</div>
+                  <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Property</div>
                   <div className="text-sm font-bold mt-0.5">{lease.property_name}</div>
                   <div className="text-[10px] text-slate-400 font-medium">{lease.property_address}</div>
                 </div>

@@ -54,7 +54,7 @@ const AdminTenants = () => {
       <div className="flex justify-between items-end">
         <div>
           <h1 className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">System Tenants</h1>
-          <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mt-1">Management of registered hostel tenants and lease statuses</p>
+          <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mt-1">Management of registered tenants and lease statuses</p>
         </div>
         <div className="bg-slate-100 border border-slate-200 rounded-xl px-3.5 py-1.5 hidden sm:block">
           <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">{tenants.length} Tenants</span>
@@ -77,7 +77,7 @@ const AdminTenants = () => {
                 <tr className="bg-slate-50 text-slate-400 font-bold uppercase tracking-wider border-b border-slate-100">
                   <th className="p-4">Tenant Profile</th>
                   <th className="p-4">Contact Info</th>
-                  <th className="p-4">Hostel Allocation</th>
+                  <th className="p-4">Property Allocation</th>
                   <th className="p-4">Approval Status</th>
                   <th className="p-4">Registration Date</th>
                 </tr>

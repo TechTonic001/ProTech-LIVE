@@ -237,7 +237,7 @@ const Properties = () => {
         <EmptyState
           icon={Building2}
           title="No properties registered"
-          message="Begin by registering a property or hostel building. Once added, you can configure rooms and assign tenants."
+          message="Begin by registering a property. Once added, you can configure rooms and assign tenants."
           actionText="Add Property"
           onActionClick={openCreateModal}
         />
@@ -258,7 +258,7 @@ const Properties = () => {
               
               <div className="p-6 space-y-4">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 flex-shrink-0">
+                  <div className="w-12 h-16 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 flex-shrink-0">
                     {property.isOptimistic ? <Loader2 className="w-6 h-6 animate-spin" /> : <Building2 className="w-6 h-6" />}
                   </div>
                   <div className="min-w-0">
@@ -378,7 +378,7 @@ const Properties = () => {
 
           <div>
             <label className="text-[10px] font-bold text-slate-600 uppercase tracking-widest block mb-1.5">
-              Property / Hostel Name
+              Property Name
             </label>
             <div className="relative">
               <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />

@@ -148,7 +148,7 @@ const BankSetup = () => {
   const handleUseTestValues = () => {
     const defaultBankCode = banks[0]?.code || '044';
     const nextForm = {
-      business_name: 'ProTech Test Hostel',
+      business_name: 'ProTech Test Property',
       settlement_bank: defaultBankCode,
       account_number: '0000000000',
       percentage_charge: 1.0,
@@ -165,8 +165,8 @@ const BankSetup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.business_name?.trim()) {
-      setFormError('Please enter your hostel or business name.');
-      toast.error('Please enter your hostel or business name.');
+      setFormError('Please enter your property or business name.');
+      toast.error('Please enter your property or business name.');
       return;
     }
     if (!form.settlement_bank || !form.account_number) {
@@ -311,7 +311,7 @@ const BankSetup = () => {
             </div>
             <div className="flex justify-between py-1 border-b border-slate-100">
               <span className="text-slate-400 uppercase tracking-wider">Account Name</span>
-              <span className="text-slate-800 font-bold">{bankDetails?.account_name || profile?.account_name || 'Hostel Business'}</span>
+              <span className="text-slate-800 font-bold">{bankDetails?.account_name || profile?.account_name || 'Property Business'}</span>
             </div>
             <div className="flex justify-between py-1 border-b border-slate-100">
               <span className="text-slate-400 uppercase tracking-wider">Bank</span>
@@ -363,7 +363,7 @@ const BankSetup = () => {
                 name="business_name"
                 value={form.business_name}
                 onChange={handleInputChange}
-                placeholder="e.g. Halleluyah Hostel Management"
+                placeholder="e.g. Halleluyah Property Management"
                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition"
               />
             </div>

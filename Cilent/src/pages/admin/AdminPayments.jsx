@@ -94,7 +94,7 @@ const AdminPayments = () => {
                 <tr className="bg-slate-50 text-slate-400 font-bold uppercase tracking-wider border-b border-slate-100">
                   <th className="p-4">Payment Reference</th>
                   <th className="p-4">Tenant Info</th>
-                  <th className="p-4">Recipient Hostel</th>
+                  <th className="p-4">Recipient Property</th>
                   <th className="p-4">Transaction Details</th>
                   <th className="p-4">Status</th>
                 </tr>

@@ -515,9 +515,9 @@ const Rooms = () => {
     return (
       <EmptyState
         icon={Building2}
-        title="No hostels registered"
+        title="No properties registered"
         message="Create a property first to manage rooms."
-        actionText="Add Hostel"
+        actionText="Add Property"
         onActionClick={() => navigate('/landlord/properties')}
       />
     );

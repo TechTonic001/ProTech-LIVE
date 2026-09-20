@@ -82,13 +82,13 @@ const Landing = () => {
           {/* Left — Text */}
           <div className="space-y-8">
             {/* <div className="flex items-center gap-3 border-l-4 border-amber-400 pl-4">
-              <span className="text-amber-400 text-sm font-semibold">🏠  Nigeria's #1 Student Hostel Management Platform</span>
+              <span className="text-amber-400 text-sm font-semibold">🏠  Nigeria's #1 Rental Property Management Platform</span>
             </div> */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight">
               Manage Your Rental<br />Properties <span className="text-amber-400">Smarter.</span>
             </h1>
             <p className="text-lg text-slate-300 max-w-lg">
-              Property Technology (ProTech) automates rent collection, payment tracking, and tenant notifications for Nigerian landlords and hostel operators  so you never miss a payment again.
+              Property Technology (ProTech) automates rent collection, payment tracking, and tenant notifications for Nigerian landlords and property managers — so you never miss a payment again.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <button onClick={() => navigate('/landlord/register')} className="px-8 py-4 bg-amber-400 text-slate-900 font-bold rounded-2xl text-lg hover:bg-amber-300 transition shadow-lg shadow-amber-400/20">
@@ -174,14 +174,16 @@ const Landing = () => {
       <section id="features" className="py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900">Everything You Need to Manage Your Hostel</h2>
-            <p className="mt-4 text-lg text-slate-500 max-w-2xl mx-auto">From tenant onboarding to automatic rent reminders, ProTech handles it all.</p>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900">Everything You Need to Manage Your Property</h2>
+            <p className="mt-4 text-lg text-slate-500 max-w-2xl mx-auto">
+              ProTech works for all types of rental properties — residential apartments, commercial properties, family homes, and room rentals. Whether you manage a residential apartment building, a multi-unit complex, or a single-family rental home — ProTech handles your rent administration automatically.
+            </p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
-              { icon: '🔔', color: 'bg-blue-100 text-blue-600', title: 'Automated Rent Reminders', body: 'Tenants receive email notifications at 30 days, 7 days, and 1 day before rent is due  automatically every morning at 6AM. No manual follow-up required.' },
+              { icon: '🔔', color: 'bg-blue-100 text-blue-600', title: 'Automated Rent Reminders', body: 'Tenants receive email notifications at 30 days, 7 days, and 1 day before rent is due — automatically every morning at 6AM. No manual follow-up required.' },
               { icon: '💳', color: 'bg-green-100 text-green-600', title: 'Secure Paystack Payments', body: 'Tenants pay rent online via Paystack. Funds are automatically routed directly to your registered bank account. Every payment is verified and receipts are emailed instantly.' },
-              { icon: '🧾', color: 'bg-amber-100 text-amber-600', title: 'Digital Receipts on Every Payment', body: 'A professionally formatted receipt showing your hostel name is automatically generated and emailed to the tenant after every confirmed payment. No paperwork needed.' },
+              { icon: '🧾', color: 'bg-amber-100 text-amber-600', title: 'Digital Receipts on Every Payment', body: 'A professionally formatted receipt showing your property name is automatically generated and emailed to the tenant after every confirmed payment. No paperwork needed.' },
               { icon: '📱', color: 'bg-purple-100 text-purple-600', title: 'Phone Notifications No App Download', body: 'ProTech works as a Progressive Web App. Landlords and tenants receive notifications directly on their phone screen like WhatsApp without downloading anything from the Play Store.' },
               { icon: '📊', color: 'bg-orange-100 text-orange-600', title: 'Real-Time Financial Dashboard', body: 'See your total revenue, occupied rooms, overdue tenants, and payment history at a glance. Charts update automatically every time a payment is confirmed.' },
               { icon: '📢', color: 'bg-red-100 text-red-600', title: 'Broadcast Announcements', body: 'Send a maintenance notice, security update, or any announcement to all your tenants at once. Every tenant receives it by email and on their phone instantly.' },
@@ -204,7 +206,7 @@ const Landing = () => {
             {/* Connector line (desktop) */}
             <div className="hidden md:block absolute top-10 left-[16%] right-[16%] h-0.5 bg-slate-200" />
             {[
-              { step: '1', title: 'Register Your Hostel', body: 'Create a landlord account with your hostel name and address. Add your properties, define your rooms, set yearly rent amounts, and connect your bank account through our secure Paystack integration.' },
+              { step: '1', title: 'Register Your Property', body: 'Create a landlord account with your property name and address. Add your properties, define your rooms, set rent amounts, and connect your bank account through our secure Paystack integration.' },
               { step: '2', title: 'Onboard Your Tenants', body: 'Tenants register themselves with their email address. You receive a notification and approve their account with one click. They receive a confirmation email immediately and can start using the portal.' },
               { step: '3', title: 'Everything Runs Automatically', body: 'ProTech sends rent reminders, processes payments, generates receipts, and updates your dashboard without any manual work. You collect your rent, we handle the administration.' },
             ].map((s, i) => (
@@ -230,7 +232,7 @@ const Landing = () => {
                 { t: 'Eliminate Manual Rent Collection', b: 'Replace paper ledgers, spreadsheets, and informal bank transfer verification with a single, automated digital platform that handles all financial tracking.' },
                 { t: 'Protect Landlords from Payment Fraud', b: 'End the practice of WhatsApp screenshot payment proofs. Every payment is cryptographically verified through Paystack before any record is updated.' },
                 { t: 'Give Tenants Full Transparency', b: 'Tenants deserve to see their own payment history, lease details, and due dates without having to physically find their landlord to ask.' },
-                { t: 'Support Nigeria\'s Cashless Economy', b: 'ProTech directly supports the Central Bank of Nigeria\'s cashless economy initiative by moving student hostel rent payments fully online.' },
+                { t: 'Support Nigeria\'s Cashless Economy', b: 'ProTech directly supports the Central Bank of Nigeria\'s cashless economy initiative by moving rental property rent payments fully online.' },
               ].map((a, i) => (
                 <div key={i} className="border-l-4 border-amber-400 pl-5">
                   <h4 className="font-bold text-slate-900 mb-1">{a.t}</h4>
@@ -264,14 +266,14 @@ const Landing = () => {
             A Nigeria Where Every Landlord and Tenant Has a Fair, Transparent, and Fully Digital Rental Experience.
           </h2>
           <p className="text-slate-300 leading-relaxed max-w-2xl mx-auto mb-10">
-            ProTech was built in Ogbomoso, Oyo State, for Nigerian hostel operators who deserve the same quality of property management tools available to large real estate firms. Our vision is to grow from a final  year academic project into a platform that serves thousands of properties across Nigeria  making rent collection honest, automated, and stress free for everyone involved.
+            ProTech was built in Ogbomoso, Oyo State, for Nigerian property operators who deserve the same quality of property management tools available to large real estate firms. Our vision is to grow from a final year academic project into a platform that serves thousands of properties across Nigeria — making rent collection honest, automated, and stress free for everyone involved.
           </p>
           <div className="w-20 h-1 bg-amber-400 mx-auto mb-12 rounded-full" />
           <div className="grid md:grid-cols-3 gap-8">
             {[
               { t: 'Transparency', b: 'Every naira tracked, every notification logged, every receipt stored. No disputes, no confusion.' },
               { t: 'Automation', b: 'Technology should do the administrative work so landlords can focus on growing their portfolios.' },
-              { t: 'Accessibility', b: 'Built as a PWA so any Nigerian with a smartphone and internet access can use it  no app download required.' },
+              { t: 'Accessibility', b: 'Built as a PWA so any Nigerian with a smartphone and internet access can use it — no app download required.' },
             ].map((p, i) => (
               <div key={i} className="text-center">
                 <h4 className="text-lg font-bold text-amber-400 mb-3">{p.t}</h4>
@@ -287,16 +289,16 @@ const Landing = () => {
         {/* Landlords */}
         <div className="bg-slate-900 p-10 sm:p-14 lg:p-20">
           <p className="text-xs font-bold text-amber-400 uppercase tracking-widest mb-3">For Landlords</p>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-8">Run Your Hostel Like a Business</h2>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-8">Run Your Property Like a Business</h2>
           <ul className="space-y-3 mb-10">
             {[
               'Register multiple properties and all rooms in minutes',
               'Approve tenant accounts with a single click',
-              'Receive rent directly in your bank  zero manual collection',
+              'Receive rent directly in your bank — zero manual collection',
               'See exactly who has paid and who is overdue at a glance',
               'Send announcements to all tenants at once',
               'Download complete payment records any time',
-              'Your hostel name appears on every digital receipt',
+              'Your property name appears on every digital receipt',
             ].map((b, i) => (
               <li key={i} className="flex items-start gap-3 text-white/90 text-sm"><span className="text-green-400 mt-0.5">✓</span>{b}</li>
             ))}
@@ -311,13 +313,13 @@ const Landing = () => {
           <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-8">Pay Rent Safely From Your Phone</h2>
           <ul className="space-y-3 mb-10">
             {[
-              'Pay rent online  no cash, no bank queue',
+              'Pay rent online — no cash, no bank queue',
               'Receive reminders before your due date by email',
               'Get a digital receipt emailed to you after payment',
               'View your complete payment history any time',
               'See exactly how many days remain on your lease',
               'Receive landlord announcements instantly on your phone',
-              'Your receipt shows your hostel name for clear records',
+              'Your property name shows on every receipt for clear records',
             ].map((b, i) => (
               <li key={i} className="flex items-start gap-3 text-white/90 text-sm"><span className="text-blue-300 mt-0.5">✓</span>{b}</li>
             ))}
@@ -337,12 +339,12 @@ const Landing = () => {
             <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-6">Built at SQI College of ICT, Ogbomoso</h2>
             <div className="space-y-4 text-sm text-slate-600 leading-relaxed">
               <p>ProTech is a final-year capstone project developed by Amoo Halleluyah as part of the National Diploma programme at SQI College of ICT, Ogbomoso, Oyo State, Nigeria.</p>
-              <p>The system was designed to solve real operational problems observed in student hostel management across Nigerian where most landlords still rely on paper records and informal bank transfers for rent collection.</p>
+              <p>The system was designed to solve real operational problems observed in rental property management across Nigeria where most landlords still rely on paper records and informal bank transfers for rent collection.</p>
             </div>
             <div className="flex flex-wrap gap-3 mt-8">
               {[
                 { icon: '📍', text: 'SQI College of ICT, Ogbomoso' },
-                { icon: '🎓', text: 'ND  Computer Science' },
+                { icon: '🎓', text: 'ND Computer Science' },
                 { icon: '📅', text: 'AUGUST 2026' },
               ].map((b, i) => (
                 <span key={i} className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full text-xs font-medium text-slate-600">{b.icon} {b.text}</span>
@@ -381,10 +383,10 @@ const Landing = () => {
       {/* ═══ SECTION 10 — CTA BANNER ═══ */}
       <section className="py-16 bg-amber-400">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-4">Ready to Automate Your Hostel Management?</h2>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-4">Ready to Automate Your Property Management?</h2>
           <p className="text-lg text-slate-700 mb-8">Join landlords and tenants across Ogbomoso who are already using ProTech to manage rent the smart way.</p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button onClick={() => navigate('/landlord/register')} className="px-8 py-3.5 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition">Register Your Hostel</button>
+            <button onClick={() => navigate('/landlord/register')} className="px-8 py-3.5 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition">Register Your Property</button>
             <button onClick={() => navigate('/tenant/register')} className="px-8 py-3.5 bg-white text-slate-900 font-bold rounded-xl hover:bg-slate-50 transition border-2 border-slate-200">Register as Tenant</button>
           </div>
         </div>

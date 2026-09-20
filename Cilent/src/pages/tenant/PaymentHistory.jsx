@@ -72,7 +72,7 @@ const PaymentHistory = () => {
               <thead>
                 <tr className="border-b bg-slate-50 text-left text-xs uppercase tracking-wider text-slate-500">
                   <th className="px-4 py-3">Date</th>
-                  <th className="px-4 py-3">Hostel</th>
+                  <th className="px-4 py-3">Property</th>
                   <th className="px-4 py-3">Room</th>
                   <th className="px-4 py-3">Amount</th>
                   <th className="px-4 py-3">Status</th>
@@ -121,7 +121,7 @@ const PaymentHistory = () => {
               <>
                 {/* Header */}
                 <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-8 text-center">
-                  <p className="text-2xl font-extrabold text-white">{receipt.hostel_name || 'ProTech'}</p>
+                  <p className="text-2xl font-extrabold text-white">{receipt.hostel_name || receipt.property_name || 'ProTech'}</p>
                   <p className="text-xs text-white/60 uppercase tracking-[0.2em] mt-1">Official Rent Receipt</p>
                   <div className="inline-block mt-3 px-3 py-1 bg-amber-400/20 rounded-full">
                     <p className="text-xs font-mono font-bold text-amber-400">{receipt.receipt_number || receipt.paystack_ref}</p>
@@ -132,8 +132,8 @@ const PaymentHistory = () => {
                 {/* Body */}
                 <div className="p-6 space-y-3">
                   {[
-                    { label: 'Hostel Name', value: receipt.hostel_name },
-                    { label: 'Hostel Address', value: receipt.hostel_address },
+                    { label: 'Property Name', value: receipt.hostel_name || receipt.property_name },
+                    { label: 'Property Address', value: receipt.hostel_address || receipt.property_address },
                     { label: 'Tenant', value: receipt.tenant_name },
                     { label: 'Username', value: receipt.tenant_username ? `@${receipt.tenant_username}` : null },
                     { label: 'Room', value: receipt.room_number ? `${receipt.room_number}${receipt.room_type ? `  ${receipt.room_type}` : ''}` : null },

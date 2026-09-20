@@ -326,7 +326,7 @@ const TenantDashboard = () => {
             </div>
             <h3 className="text-sm font-bold text-slate-900">Announcements</h3>
             <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-              Read notices and general announcements issued by your hostel landlord.
+              Read notices and general announcements issued by your landlord.
             </p>
           </div>
           <div className="flex justify-between items-center mt-6 pt-2 border-t border-slate-50 text-xs font-bold text-slate-400 uppercase tracking-wider">
@@ -459,8 +459,8 @@ const TenantDashboard = () => {
             {lease ? (
               <div className="divide-y divide-slate-50 font-semibold text-xs text-slate-600">
                 {[
-                  { label: 'Hostel Name', value: lease.property_name },
-                  { label: 'Hostel Address', value: lease.property_address },
+                  { label: 'Property Name', value: lease.property_name },
+                  { label: 'Property Address', value: lease.property_address },
                   { label: 'Room Number', value: `${lease.room_number} (${lease.room_type || 'Single'})` },
                   { label: 'Yearly Rent', value: formatCurrency(lease.rent_amount), blue: true },
                   { label: 'Agreement Period', value: `${formatDate(lease.start_date)} — ${formatDashboardDate(lease.end_date)}` },
@@ -547,7 +547,7 @@ const TenantDashboard = () => {
       >
         <form onSubmit={handleRelinkSubmit} className="p-6 space-y-4">
           <p className="text-xs text-slate-500 leading-relaxed">
-            Enter the unique landlord code supplied by your new hostel manager.
+            Enter the unique landlord code supplied by your new property manager.
           </p>
           <div>
             <label className="text-[10px] font-bold text-slate-600 uppercase tracking-widest block mb-1.5">

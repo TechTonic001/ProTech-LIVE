@@ -63,15 +63,26 @@ const determineShouldNotify = (daysRemaining, settings = {}) => {
   return { shouldNotify: false, notifyType: null };
 };
 
-const runNotificationEngine = async (currentHour) => {
-  console.log(`
-    [CRON] Notification engine running — WAT hour: ${currentHour}
-  `);
+const runNotificationEngine = async (currentHourArg, options = {}) => {
+  let currentHour = currentHourArg;
+  let force = false;
+
+  if (typeof currentHourArg === 'object' && currentHourArg !== null) {
+    options = currentHourArg;
+    currentHour = options.currentHour || options.hour;
+    force = !!options.force;
+  } else if (typeof options === 'object' && options !== null) {
+    force = !!options.force;
+  }
+
+  console.log(`[CRON] Notification engine running — WAT hour: ${currentHour || 'ALL'}, force mode: ${force}`);
 
   // Today in Africa/Lagos as YYYY-MM-DD string
   const todayWAT = new Date().toLocaleDateString('en-CA', {
     timeZone: 'Africa/Lagos'
   });
+
+  const executionDetails = [];
 
   try {
     const [leases] = await db.query(`
@@ -79,9 +90,10 @@ const runNotificationEngine = async (currentHour) => {
         l.lease_id,
         l.tenant_id,
         l.landlord_id,
-        l.rent_amount,
-        l.amount_paid_this_cycle,
-        l.rent_amount - COALESCE(l.amount_paid_this_cycle, 0)
+        COALESCE(l.rent_amount, 0)         AS rent_amount,
+        COALESCE(l.amount_paid_this_cycle, 0) AS amount_paid_this_cycle,
+        COALESCE(l.carried_forward_balance, 0) AS carried_forward_balance,
+        COALESCE(l.rent_amount, 0) - COALESCE(l.amount_paid_this_cycle, 0)
           + COALESCE(l.carried_forward_balance, 0) AS remaining,
         TO_CHAR(l.end_date, 'YYYY-MM-DD')   AS end_date,
         TO_CHAR(l.end_date, 'YYYY-MM-DD')   AS due_date,
@@ -114,7 +126,7 @@ const runNotificationEngine = async (currentHour) => {
       JOIN properties p ON r.property_id = p.property_id
       LEFT JOIN notification_settings ns
         ON ns.landlord_id = l.landlord_id
-      WHERE l.lease_status = 'active'
+      WHERE (l.lease_status = 'active' OR l.is_active = TRUE)
         AND (COALESCE(l.amount_paid_this_cycle, 0) < l.rent_amount
           OR COALESCE(l.carried_forward_balance, 0) > 0)
         AND u_t.deleted_at IS NULL
@@ -131,128 +143,157 @@ const runNotificationEngine = async (currentHour) => {
       const days = parseInt(lease.days_remaining);
 
       // ── Send-time filter ──────────────────────────────
-      const preferredHour = (lease.send_time || '08:00')
-        .split(':')[0].padStart(2,'0')
+      if (!force && currentHour && currentHour !== 'all') {
+        const preferredHour = (lease.send_time || '08:00')
+          .split(':')[0].padStart(2,'0');
 
-      if (preferredHour !== currentHour) {
-        skipped++
-        continue
+        if (preferredHour !== currentHour) {
+          skipped++;
+          executionDetails.push({ lease_id: lease.lease_id, status: 'skipped', reason: `preferred hour ${preferredHour} != ${currentHour}` });
+          continue;
+        }
       }
 
       // ── Determine notification type ───────────────────
-      let notifyType = null
+      let notifyType = null;
 
       if (days === 30 && lease.remind_30_days)
-        notifyType = 'reminder_30_days'
+        notifyType = 'reminder_30_days';
       else if (days === 14 && lease.remind_14_days)
-        notifyType = 'reminder_14_days'
+        notifyType = 'reminder_14_days';
       else if (days === 7  && lease.remind_7_days)
-        notifyType = 'reminder_7_days'
+        notifyType = 'reminder_7_days';
       else if (days === 3  && lease.remind_3_days)
-        notifyType = 'reminder_3_days'
+        notifyType = 'reminder_3_days';
       else if (days === 1  && lease.remind_1_day)
-        notifyType = 'reminder_1_day'
+        notifyType = 'reminder_1_day';
       else if (days === 0  && lease.remind_on_due)
-        notifyType = 'due_today'
+        notifyType = 'due_today';
       else if (days < 0) {
-        const daysPast = Math.abs(days)
-        const freq = lease.frequency_overdue || 'daily'
-        let shouldSend = false
+        const daysPast = Math.abs(days);
+        const freq = lease.frequency_overdue || 'daily';
+        let shouldSend = false;
 
         if (freq === 'daily')
-          shouldSend = true
+          shouldSend = true;
         else if (freq === 'every_2_days' && daysPast % 2 === 0)
-          shouldSend = true
+          shouldSend = true;
         else if (freq === 'weekly' && daysPast % 7 === 0)
-          shouldSend = true
+          shouldSend = true;
 
-        if (shouldSend) notifyType = 'overdue'
+        if (shouldSend) notifyType = 'overdue';
       }
 
-      if (!notifyType) { skipped++; continue }
+      // If force mode is active, override empty notifyType so manual tests always send!
+      if (!notifyType && force) {
+        if (days > 0) notifyType = 'reminder_manual_test';
+        else if (days === 0) notifyType = 'due_today_manual_test';
+        else notifyType = 'overdue_manual_test';
+      }
+
+      if (!notifyType) {
+        skipped++;
+        executionDetails.push({ lease_id: lease.lease_id, status: 'skipped', reason: `day ${days} not scheduled for notification` });
+        continue;
+      }
 
       // ── Duplicate prevention (per-day idempotency) ───
-      const [existing] = await db.query(`
-        SELECT notification_id FROM notifications
-        WHERE lease_id = $1
-          AND notification_type = $2
-          AND DATE(
-            sent_at AT TIME ZONE 'Africa/Lagos'
-          ) = $3::DATE
-      `, [lease.lease_id, notifyType, todayWAT])
+      if (!force) {
+        const [existing] = await db.query(`
+          SELECT notification_id FROM notifications
+          WHERE lease_id = $1
+            AND notification_type = $2
+            AND DATE(
+              sent_at AT TIME ZONE 'Africa/Lagos'
+            ) = $3::DATE
+        `, [lease.lease_id, notifyType, todayWAT]);
 
-      if (existing.length > 0) {
-        console.log(
-          `[CRON] Duplicate skipped: ${notifyType} for lease ${lease.lease_id}`
-        )
-        skipped++
-        continue
+        if (existing && existing.length > 0) {
+          console.log(
+            `[CRON] Duplicate skipped: ${notifyType} for lease ${lease.lease_id}`
+          );
+          skipped++;
+          executionDetails.push({ lease_id: lease.lease_id, status: 'skipped', reason: `already sent today (${notifyType})` });
+          continue;
+        }
       }
 
-      // ── Build urgency label and email subject ─────────
-      const remaining = parseFloat(lease.remaining || 0)
-      let urgencyLabel, tenantSubject, landlordSubject
+      // ── Build urgency label and amount remaining ─────────
+      const remaining = parseFloat(lease.remaining || 0);
+      const remainingFmt = `₦${remaining.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+      let urgencyLabel, tenantSubject, landlordSubject;
 
       if (days > 0) {
-        urgencyLabel   = `${days} day${days===1?'':'s'} remaining`
-        tenantSubject  = `Rent Reminder: ${urgencyLabel} until your rent is due`
-        landlordSubject= `Tenant Rent Alert: ${lease.tenant_name} — ${urgencyLabel}`
+        urgencyLabel   = `${days} day${days===1?'':'s'} remaining`;
+        tenantSubject  = `Rent Reminder: ${remainingFmt} Owing — ${urgencyLabel}`;
+        landlordSubject= `Tenant Rent Alert: ${lease.tenant_name} — ${remainingFmt} Outstanding (${urgencyLabel})`;
       } else if (days === 0) {
-        urgencyLabel   = 'Due TODAY'
-        tenantSubject  = 'Action Required: Your rent is due today'
-        landlordSubject= `Tenant Rent Alert: ${lease.tenant_name} — due TODAY`
+        urgencyLabel   = 'Due TODAY';
+        tenantSubject  = `URGENT: ${remainingFmt} Rent Due TODAY`;
+        landlordSubject= `Tenant Rent Alert: ${lease.tenant_name} — ${remainingFmt} Due TODAY`;
       } else {
-        const d = Math.abs(days)
-        urgencyLabel   = `${d} day${d===1?'':'s'} OVERDUE`
-        tenantSubject  = `OVERDUE: Your rent is ${urgencyLabel}`
-        landlordSubject= `OVERDUE ALERT: ${lease.tenant_name} — ${urgencyLabel}`
+        const d = Math.abs(days);
+        urgencyLabel   = `${d} day${d===1?'':'s'} OVERDUE`;
+        tenantSubject  = `🚨 OVERDUE: ${remainingFmt} Rent Owing (${urgencyLabel})`;
+        landlordSubject= `🚨 OVERDUE ALERT: ${lease.tenant_name} — ${remainingFmt} Outstanding (${urgencyLabel})`;
       }
 
       // ── Send TENANT email ─────────────────────────────
+      let tenantEmailSent = false;
       if (lease.enable_email_reminders) {
-        sendReminderHtmlEmail(
-          lease.tenant_email,
-          lease.tenant_name,
-          remaining,
-          lease.due_date,
-          lease.property_name || lease.hostel_name
-        ).then(() => {
-          console.log(
-            `[CRON] ✅ ${notifyType} → tenant email ${lease.tenant_email}`
-            + ` | ${urgencyLabel} | ₦${remaining.toLocaleString()} remaining`
-          )
-        }).catch(err => {
-          console.error(
-            `[CRON] ❌ Tenant email FAILED for lease ${lease.lease_id}:`,
-            err.message
-          )
-        })
+        try {
+          await sendRentReminderEmail(
+            lease.tenant_email,
+            lease.tenant_name,
+            {
+              subject:         tenantSubject,
+              hostelName:      lease.hostel_name,
+              propertyName:    lease.property_name,
+              roomNumber:      lease.room_number,
+              amountRemaining: remaining,
+              rentAmount:      lease.rent_amount,
+              amountPaid:      lease.amount_paid_this_cycle,
+              dueDate:         lease.due_date,
+              urgencyLabel,
+              notifyType,
+              days,
+              payNowLink: `${process.env.FRONTEND_URL || 'https://pro-tech-one.vercel.app'}/tenant/login`
+            }
+          );
+          tenantEmailSent = true;
+          console.log(`[CRON] ✅ Reminder email → ${lease.tenant_email} | ${urgencyLabel} | ${remainingFmt} owing`);
+        } catch (err) {
+          console.error(`[CRON] ❌ Reminder email FAILED → ${lease.tenant_email}:`, err.message);
+        }
       }
 
       // ── Send LANDLORD alert email ─────────────────────
-      sendLandlordRentAlert(
-        lease.landlord_email,
-        lease.landlord_name,
-        {
-          subject:         landlordSubject,
-          tenantName:      lease.tenant_name,
-          roomNumber:      lease.room_number,
-          amountRemaining: remaining,
-          dueDate:         lease.due_date,
-          urgencyLabel,
-          notifyType,
-          days
-        }
-      ).then(() => {
-        console.log(
-          `[CRON] ✅ ${notifyType} → landlord ${lease.landlord_email}`
-        )
-      }).catch(err => {
-        console.error(
-          `[CRON] ❌ Landlord alert FAILED for lease ${lease.lease_id}:`,
-          err.message
-        )
-      })
+      let landlordEmailSent = false;
+      try {
+        await sendLandlordRentAlert(
+          lease.landlord_email,
+          lease.landlord_name,
+          {
+            subject:         landlordSubject,
+            tenantName:      lease.tenant_name,
+            roomNumber:      lease.room_number,
+            propertyName:    lease.property_name,
+            hostelName:      lease.hostel_name,
+            amountRemaining: remaining,
+            rentAmount:      lease.rent_amount,
+            amountPaid:      lease.amount_paid_this_cycle,
+            dueDate:         lease.due_date,
+            urgencyLabel,
+            notifyType,
+            days
+          }
+        );
+        landlordEmailSent = true;
+        console.log(`[CRON] ✅ Landlord alert email → ${lease.landlord_email}`);
+      } catch (err) {
+        console.error(`[CRON] ❌ Landlord alert FAILED for lease ${lease.lease_id}:`, err.message);
+      }
 
       if (lease.whatsapp_enabled) {
         if (lease.tenant_phone) {
@@ -261,9 +302,9 @@ const runNotificationEngine = async (currentHour) => {
             `Hello ${lease.tenant_name}, your rent is ${urgencyLabel}.`,
             `Property: ${lease.hostel_name || lease.property_name}`,
             `Room: ${lease.room_number}`,
-            `Amount owed: NGN ${remaining.toLocaleString()}`,
-            `Due date: ${lease.due_date}`,
-            `Pay: ${process.env.FRONTEND_URL}/tenant/login`,
+            `Amount Owed: ${remainingFmt}`,
+            `Due Date: ${lease.due_date}`,
+            `Pay online: ${process.env.FRONTEND_URL || 'https://pro-tech-one.vercel.app'}/tenant/login`,
           ].join('\n');
           sendWhatsAppMessage(lease.tenant_phone, tenantMessage)
             .catch((err) => console.error('[CRON] Tenant WhatsApp failed:', err.message));
@@ -271,10 +312,10 @@ const runNotificationEngine = async (currentHour) => {
         if (lease.landlord_phone) {
           const landlordMessage = [
             'ProTech Landlord Alert',
-            `Tenant ${lease.tenant_name} has a rent alert: ${urgencyLabel}.`,
+            `Tenant ${lease.tenant_name} rent status: ${urgencyLabel}.`,
             `Room: ${lease.room_number}`,
-            `Amount owed: NGN ${remaining.toLocaleString()}`,
-            `Due date: ${lease.due_date}`,
+            `Amount Owed: ${remainingFmt}`,
+            `Due Date: ${lease.due_date}`,
           ].join('\n');
           sendWhatsAppMessage(lease.landlord_phone, landlordMessage)
             .catch((err) => console.error('[CRON] Landlord WhatsApp failed:', err.message));
@@ -293,21 +334,38 @@ const runNotificationEngine = async (currentHour) => {
         lease.tenant_id,
         lease.landlord_id,
         notifyType,
-        `${notifyType}: ${urgencyLabel} — ₦${remaining.toLocaleString()} remaining — due ${lease.due_date}`
-      ])
+        `${notifyType}: ${urgencyLabel} — ${remainingFmt} remaining owing — due ${lease.due_date}`
+      ]);
 
-      sent++
+      sent++;
+      executionDetails.push({
+        lease_id: lease.lease_id,
+        tenant: lease.tenant_email,
+        landlord: lease.landlord_email,
+        amount_owing: remainingFmt,
+        status: 'sent',
+        tenantEmailSent,
+        landlordEmailSent
+      });
     }
 
     console.log(
       `[CRON] Complete — ${sent} notifications sent, `
       + `${skipped} skipped (time filter or already sent)`
-    )
+    );
+
+    return {
+      sent,
+      skipped,
+      processed: leases.length,
+      details: executionDetails
+    };
 
   } catch (err) {
-    console.error('[CRON] Notification engine error:', err.message)
+    console.error('[CRON] Notification engine error:', err.message);
+    return { sent: 0, skipped: 0, error: err.message };
   }
-}
+};
 
 module.exports = {
   runNotificationEngine,

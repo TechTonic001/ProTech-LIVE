@@ -163,7 +163,7 @@ const Announcements = () => {
               onChange={handleInputChange}
               className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:bg-white transition"
             >
-              <option value="all">📢 All Registered Hostels</option>
+              <option value="all">📢 All Registered Properties</option>
               {properties.map(p => (
                 <option key={p.property_id} value={p.property_id}>
                   🏢 {p.property_name}
@@ -281,7 +281,7 @@ const Announcements = () => {
 
                 <div className="flex items-center justify-between pt-3 border-t border-slate-50 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                   <Badge status="info">
-                    {ann.property_name || 'Hostel'}
+                    {ann.property_name || 'Property'}
                   </Badge>
                   
                   <button

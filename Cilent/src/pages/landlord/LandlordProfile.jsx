@@ -67,7 +67,7 @@ const LandlordProfile = () => {
     <div className="min-h-screen p-4 sm:p-8 bg-slate-100 text-slate-900">
       <div className="max-w-4xl mx-auto space-y-6">
         <h1 className="text-3xl font-semibold">Profile</h1>
-        <p className="text-slate-500">Update your landlord profile and hostel information.</p>
+        <p className="text-slate-500">Update your landlord profile and property information.</p>
 
         {/* Unique Landlord Code Card */}
         <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-5 flex items-center justify-between shadow-xs">
@@ -100,21 +100,21 @@ const LandlordProfile = () => {
           </button>
         </div>
 
-        {/* ── Hostel Setup Prompt (shown when hostel_name is not yet set) ── */}
+        {/* ── Property Setup Prompt (shown when hostel_name is not yet set) ── */}
         {/* {!profile?.hostel_name && (
           <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5">
             <p className="text-sm font-bold text-blue-800">
-              <Building2 className="w-4 h-4 inline-block mr-1" /> Add Your Hostel Details
+              <Building2 className="w-4 h-4 inline-block mr-1" /> Add Your Property Details
             </p>
             <p className="text-xs text-blue-600 mt-1 mb-3">
-              Your hostel name and address appear on every tenant receipt and payment confirmation.
+              Your property name and address appear on every tenant receipt and payment confirmation.
               Click <strong>Edit</strong> below to add them now.
             </p>
             <button
               onClick={() => setEditing(true)}
               className="text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-xl transition"
             >
-              ✏️ Add Hostel Info
+              ✏️ Add Property Info
             </button>
           </div>
         )} */}
@@ -185,12 +185,12 @@ const LandlordProfile = () => {
               </div>
             </div>
 
-            {/* Hostel Details */}
+            {/* Property Details */}
             {/* <div className="border-t border-slate-100 pt-6">
-              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4"><Building2 className="w-4 h-4 inline-block mr-1" /> Hostel Details</h3>
+              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4"><Building2 className="w-4 h-4 inline-block mr-1" /> Property Details</h3>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1">Hostel Name</label>
+                  <label className="block text-xs font-semibold text-slate-500 mb-1">Property Name</label>
                   {editing ? (
                     <>
                       <input type="text" value={form.hostel_name} onChange={(e) => setForm({ ...form, hostel_name: e.target.value })} placeholder="e.g. Halleluyah Court" className="w-full px-4 py-3 bg-white rounded-xl text-sm border border-slate-300 focus:border-blue-400 outline-none" />
@@ -201,7 +201,7 @@ const LandlordProfile = () => {
                   )}
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1">Hostel Address</label>
+                  <label className="block text-xs font-semibold text-slate-500 mb-1">Property Address</label>
                   {editing ? (
                     <textarea value={form.hostel_address} onChange={(e) => setForm({ ...form, hostel_address: e.target.value })} placeholder="e.g. No. 5 Oke-Ola Street, Ogbomoso" rows={3} className="w-full px-4 py-3 bg-white rounded-xl text-sm border border-slate-300 focus:border-blue-400 outline-none resize-none" />
                   ) : (

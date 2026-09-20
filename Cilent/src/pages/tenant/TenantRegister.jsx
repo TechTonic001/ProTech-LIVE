@@ -169,7 +169,7 @@ const TenantRegister = () => {
       <div className="font-outfit space-y-6">
         <div>
           <h1 className="text-3xl font-black text-slate-900 tracking-tight">Tenant Registration</h1>
-          <p className="text-slate-500 text-sm mt-1">Join your hostel space and track payments</p>
+          <p className="text-slate-500 text-sm mt-1">Join your property space and track payments</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -202,7 +202,7 @@ const TenantRegister = () => {
             <div className="bg-blue-50 rounded-lg p-3 mt-1.5 flex items-start gap-2 border border-blue-100">
               <Info className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
               <p className="text-[11px] text-blue-600 leading-normal font-semibold">
-                Ask your landlord for their code (e.g. PT-XXXXXX) to connect.
+                Enter the ProTech code provided by your landlord. It looks like PT-XXXXXX. Ask your landlord if you do not have it yet.
               </p>
             </div>
             {errors.landlord_code && <p className="text-xs text-red-500 mt-1">{errors.landlord_code}</p>}

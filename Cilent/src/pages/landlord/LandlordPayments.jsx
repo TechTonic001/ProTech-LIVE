@@ -124,7 +124,7 @@ const LandlordPayments = () => {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
             type="text"
-            placeholder="Search by tenant, reference, or hostel..."
+            placeholder="Search by tenant, reference, or property..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[11px] sm:text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition"
@@ -157,7 +157,7 @@ const LandlordPayments = () => {
             <thead>
               <tr className="bg-slate-50 border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider">
                 <th className="px-3 py-3 sm:px-6 sm:py-4">Tenant</th>
-                <th className="px-3 py-3 sm:px-6 sm:py-4">Hostel / Room</th>
+                <th className="px-3 py-3 sm:px-6 sm:py-4">Property / Room</th>
                 <th className="px-3 py-3 sm:px-6 sm:py-4">Amount</th>
                 <th className="px-3 py-3 sm:px-6 sm:py-4">Paystack Ref</th>
                 <th className="px-3 py-3 sm:px-6 sm:py-4">Status</th>
@@ -230,7 +230,7 @@ const LandlordPayments = () => {
               {/* Body Details */}
               <div className="divide-y divide-slate-100 border-b border-slate-100 font-semibold">
                 {[
-                  { label: 'Hostel Address', value: selectedReceipt.hostel_address },
+                  { label: 'Property Address', value: selectedReceipt.hostel_address || selectedReceipt.property_address },
                   { label: 'Tenant Name', value: selectedReceipt.tenant_name },
                   { label: 'Username', value: selectedReceipt.tenant_username ? `@${selectedReceipt.tenant_username}` : null },
                   { label: 'Room Info', value: selectedReceipt.room_number ? `${selectedReceipt.room_number} (${selectedReceipt.room_type || 'Single'})` : null },

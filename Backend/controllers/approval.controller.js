@@ -1,7 +1,7 @@
 // controllers/approval.controller.js
 const pool = require('../config/db');
 const { asyncHandler } = require('../utils/asyncHandler');
-const { sendApprovalEmail } = require('../utils/email');
+const { sendApprovalEmail, sendTenantApprovalEmail, sendLandlordApprovalConfirmEmail } = require('../utils/email');
 const { sendPushNotification } = require('../utils/push');
 
 const requestApproval = asyncHandler(async (req, res) => {
@@ -100,6 +100,69 @@ const processApproval = asyncHandler(async (req, res) => {
 
   if (status === 'approved') {
     await pool.query('UPDATE users SET is_approved = 1 WHERE user_id = $1', [approval.tenant_id]);
+
+    const tenantDetailsResult = await pool.query(`
+      SELECT
+        u.email        AS tenant_email,
+        u.full_name    AS tenant_name,
+        ul.email       AS landlord_email,
+        ul.full_name   AS landlord_name,
+        ul.hostel_name,
+        r.room_number,
+        p.property_name,
+        l.rent_amount,
+        l.payment_frequency,
+        TO_CHAR(l.start_date, 'DD Mon YYYY') AS lease_start,
+        TO_CHAR(l.end_date,   'DD Mon YYYY') AS lease_end
+      FROM users u
+      JOIN tenant_approvals ta ON ta.tenant_id = u.user_id
+      JOIN users ul ON ta.landlord_id = ul.user_id
+      LEFT JOIN leases l ON (
+        l.tenant_id   = u.user_id
+        AND l.landlord_id = ta.landlord_id
+        AND (l.lease_status = 'active' OR l.is_active = TRUE)
+      )
+      LEFT JOIN rooms r ON l.room_id = r.room_id
+      LEFT JOIN properties p ON (r.property_id = p.property_id OR ta.property_id = p.property_id)
+      WHERE u.user_id = $1 AND ta.approval_id = $2
+      LIMIT 1
+    `, [approval.tenant_id, id]);
+
+    if (tenantDetailsResult.rows.length > 0) {
+      const t = tenantDetailsResult.rows[0];
+      const frontendLink = process.env.FRONTEND_URL || 'https://pro-tech-one.vercel.app';
+
+      sendTenantApprovalEmail(
+        t.tenant_email,
+        t.tenant_name,
+        {
+          landlordName:    t.landlord_name,
+          hostelName:      t.hostel_name,
+          propertyName:    t.property_name,
+          roomNumber:      t.room_number,
+          rentAmount:      t.rent_amount,
+          paymentFrequency: t.payment_frequency,
+          leaseStartDate:  t.lease_start,
+          leaseEndDate:    t.lease_end,
+          loginLink: `${frontendLink}/tenant/login`
+        }
+      ).catch(err =>
+        console.error('[EMAIL] Approval email failed:', err.message)
+      );
+
+      sendLandlordApprovalConfirmEmail(
+        t.landlord_email,
+        t.landlord_name,
+        {
+          tenantName:   t.tenant_name,
+          roomNumber:   t.room_number,
+          propertyName: t.property_name || t.hostel_name,
+          dashboardLink: `${frontendLink}/landlord/approvals`
+        }
+      ).catch(err =>
+        console.error('[EMAIL] Landlord confirm email failed:', err.message)
+      );
+    }
   }
 
   const propertiesResult = await pool.query(

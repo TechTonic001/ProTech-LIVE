@@ -91,10 +91,10 @@ export const TENANT_TOUR_STEPS = [
   // ── Step 7 — Announcements ──────────────────────────
   {
     target: '[data-tour="nav-announcements"]',
-    title: 'Hostel Announcements',
+    title: 'Property Announcements',
     content:
       'Your landlord may post announcements here — ' +
-      'maintenance notices, hostel rules, payment ' +
+      'maintenance notices, property rules, payment ' +
       'information, and other updates. You will receive ' +
       'an email and in-app notification for every new ' +
       'announcement.',
