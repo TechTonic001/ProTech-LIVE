@@ -24,6 +24,7 @@ import {
   Settings2,
 } from 'lucide-react';
 
+
 const LandlordLayout = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
