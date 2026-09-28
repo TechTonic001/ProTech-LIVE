@@ -28,11 +28,14 @@ import {
   DoorOpen,
   UserCheck,
   CreditCard,
+  Megaphone,
   Plus,
   Copy,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import {
+  AreaChart,
+  Area,
   BarChart,
   Bar,
   XAxis,
