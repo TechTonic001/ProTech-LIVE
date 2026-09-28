@@ -6,6 +6,7 @@ import { approvalAPI } from '../../utils/api';
 import { sidebarRef } from '../../hooks/useTour';
 import NotificationOptInModal from '../shared/NotificationOptInModal';
 import logoDark from '../../assets/logo-dark.png';
+import { Megaphone } from 'lucide-react';
 import { 
   LayoutDashboard, 
   Building2, 
@@ -13,7 +14,6 @@ import {
   UserCheck, 
   CreditCard, 
   Landmark, 
-  Megaphone, 
   Bell, 
   UserCircle, 
   LogOut,
