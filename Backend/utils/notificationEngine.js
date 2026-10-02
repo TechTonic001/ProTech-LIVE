@@ -109,15 +109,15 @@ const runNotificationEngine = async (currentHourArg, options = {}) => {
         u_l.hostel_name,
         r.room_number,
         p.property_name,
-        COALESCE(ns.remind_30_days,  1)       AS remind_30_days,
-        COALESCE(ns.remind_14_days,  0)       AS remind_14_days,
-        COALESCE(ns.remind_7_days,   1)       AS remind_7_days,
-        COALESCE(ns.remind_3_days,   0)       AS remind_3_days,
-        COALESCE(ns.remind_1_day,    1)       AS remind_1_day,
-        COALESCE(ns.remind_on_due,   1)       AS remind_on_due,
+        COALESCE(ns.remind_30_days,  TRUE)    AS remind_30_days,
+        COALESCE(ns.remind_14_days,  FALSE)   AS remind_14_days,
+        COALESCE(ns.remind_7_days,   TRUE)    AS remind_7_days,
+        COALESCE(ns.remind_3_days,   FALSE)   AS remind_3_days,
+        COALESCE(ns.remind_1_day,    TRUE)    AS remind_1_day,
+        COALESCE(ns.remind_on_due,   TRUE)    AS remind_on_due,
         COALESCE(ns.send_time,      '08:00') AS send_time,
         COALESCE(ns.frequency_overdue,'daily') AS frequency_overdue,
-        COALESCE(ns.whatsapp_enabled, 0)     AS whatsapp_enabled,
+        COALESCE(ns.whatsapp_enabled, FALSE) AS whatsapp_enabled,
         COALESCE(ns.enable_email_reminders, TRUE) AS enable_email_reminders
       FROM leases l
       JOIN users u_t   ON l.tenant_id   = u_t.user_id
@@ -126,7 +126,7 @@ const runNotificationEngine = async (currentHourArg, options = {}) => {
       JOIN properties p ON r.property_id = p.property_id
       LEFT JOIN notification_settings ns
         ON ns.landlord_id = l.landlord_id
-      WHERE (l.lease_status = 'active' OR l.is_active = TRUE)
+      WHERE l.lease_status = 'active'
         AND (COALESCE(l.amount_paid_this_cycle, 0) < l.rent_amount
           OR COALESCE(l.carried_forward_balance, 0) > 0)
         AND u_t.deleted_at IS NULL

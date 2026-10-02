@@ -203,15 +203,20 @@ app.use(errorHandler);
 // The engine internally filters by each landlord's preferred send_time hour,
 // so landlords who set 08:00 only get notifications processed at 08:xx WAT.
 cron.schedule('0 * * * *', async () => {
-  const currentHour = new Date()
-    .toLocaleString('en-NG', {
-      timeZone: 'Africa/Lagos',
-      hour: '2-digit',
-      hour12: false,
-    })
-    .padStart(2, '0');
-  console.log(`[CRON TICK] Hour: ${currentHour}:00 WAT`);
-  await runNotificationEngine(currentHour);
+  try {
+    const currentHour = new Date()
+      .toLocaleString('en-NG', {
+        timeZone: 'Africa/Lagos',
+        hour: '2-digit',
+        hour12: false,
+      })
+      .padStart(2, '0')
+      .slice(0, 2);
+    console.log(`[CRON TICK] Hour: ${currentHour}:00 WAT`);
+    await runNotificationEngine(currentHour);
+  } catch (err) {
+    console.error('[CRON ERROR] Notification engine failed:', err.message);
+  }
 }, { timezone: 'Africa/Lagos' });
 
 console.log('[CRON] Hourly notification engine scheduled (Africa/Lagos timezone)');
