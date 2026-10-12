@@ -143,11 +143,10 @@ const runNotificationEngine = async (currentHourArg, options = {}) => {
       const days = parseInt(lease.days_remaining);
 
       // ── Send-time filter ──────────────────────────────
-      if (!force && currentHour && currentHour !== 'all') {
-        const preferredHour = (lease.send_time || '08:00')
-          .split(':')[0].padStart(2,'0');
+      if (!force && currentHour && String(currentHour).toUpperCase() !== 'ALL') {
+        const preferredHour = String((lease.send_time || '08:00').split(':')[0]).padStart(2, '0');
 
-        if (preferredHour !== currentHour) {
+        if (preferredHour !== String(currentHour).padStart(2, '0')) {
           skipped++;
           executionDetails.push({ lease_id: lease.lease_id, status: 'skipped', reason: `preferred hour ${preferredHour} != ${currentHour}` });
           continue;

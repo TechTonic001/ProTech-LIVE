@@ -23,6 +23,7 @@ const ForgotPassword = lazy(() => import('./pages/public/ForgotPassword'));
 const VerifyOTP = lazy(() => import('./pages/public/VerifyOTP'));
 const ResetSuccess = lazy(() => import('./pages/public/ResetSuccess'));
 const PaymentVerify = lazy(() => import('./pages/public/PaymentVerify'));
+const NotFound = lazy(() => import('./pages/public/NotFound'));
 
 // Landlord pages
 const LandlordDashboard = lazy(() => import('./pages/landlord/LandlordDashboard'));
@@ -122,7 +123,9 @@ const App = () => {
           </Route>
 
           <Route path="/dashboard" element={<AuthRedirect />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+
+          {/* 404 — catch-all — must be LAST */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
       <Toaster position="top-right" />

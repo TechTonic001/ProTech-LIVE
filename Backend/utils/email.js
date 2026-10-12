@@ -1,7 +1,7 @@
 // utils/email.js
 const nodemailer = require('nodemailer');
 
-const SMTP_HOST = process.env.SMTP_HOST || process.env.EMAIL_HOST;
+const SMTP_HOST = process.env.SMTP_HOST || process.env.EMAIL_HOST || 'smtp.gmail.com';
 const SMTP_PORT = Number(process.env.SMTP_PORT || process.env.EMAIL_PORT || 587);
 const SMTP_USER = process.env.SMTP_USER || process.env.EMAIL_USER;
 const SMTP_PASS = process.env.SMTP_PASS || process.env.EMAIL_PASS;
@@ -9,24 +9,25 @@ const SMTP_PASS = process.env.SMTP_PASS || process.env.EMAIL_PASS;
 const transporter = nodemailer.createTransport({
   host: SMTP_HOST,
   port: SMTP_PORT,
-  secure: SMTP_PORT === 465,
+  secure: false,
   auth: {
     user: SMTP_USER,
     pass: SMTP_PASS,
   },
-  pool: true,
-  maxConnections: 3,
-  maxMessages: 100,
   tls: {
     rejectUnauthorized: false,
   },
+  connectionTimeout: 10000,
+  greetingTimeout: 10000,
+  socketTimeout: 15000,
 });
 
-transporter.verify((err) => {
-  if (err) {
-    console.error('SMTP Verification Warning:', err.message || err);
+transporter.verify((error) => {
+  if (error) {
+    console.error('❌ [NODEMAILER] FAILED:', error.message);
+    console.error('  Fix: Check EMAIL_USER and EMAIL_PASS in Vercel.');
   } else {
-    console.log('SMTP Server Ready');
+    console.log('✅ [NODEMAILER] Ready — sending as', process.env.EMAIL_USER || SMTP_USER);
   }
 });
 
